@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
-        android:id="@+id/navigation_search"
-        android:title="Search"
-        android:icon="@drawable/ic_search" />
+        android:id="@+id/nav_search"
+        android:icon="@drawable/ic_search"
+        android:title="Search" />
     <item
         android:id="@+id/navigation_add"
-        android:title="Add"
-        android:icon="@drawable/ic_add"/>
+        android:icon="@drawable/ic_add"
+        android:title="Add" />
     <item
         android:id="@+id/navigation_inventory"
-        android:title="Inventory"
-        android:icon="@drawable/ic_library" />
+        android:icon="@drawable/ic_library"
+        android:title="Inventory" />
 </menu>

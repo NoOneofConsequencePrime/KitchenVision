@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.view.MenuItem;
 import android.view.View;
@@ -19,6 +20,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -26,159 +28,231 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+
 import com.example.kitchenvision.Item;
 import com.example.kitchenvision.R;
+
 import android.widget.EditText;
 
-
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 public class MainActivity extends AppCompatActivity {
 
     private static final int CAMERA_REQUEST_CODE = 100;
     private static final int CAMERA_CAPTURE_CODE = 101;
+    private String currentPhotoPath;
+    private static final String UPLOAD_URL = "http://10.0.0.142/upload";  // Change to your server URL
 
     // Class-level declarations for RecyclerView, BottomNavigationView, and Adapter
     private RecyclerView recyclerView;
     private List<Item> itemList;
     private BottomNavigationView bottomNavigationView;
     private RecyclerViewAdapter adapter;
+    private OkHttpClient client;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main); // Set the layout for the activity
 
-        // Set up edge-to-edge display with insets for system bars (status bar, navigation bar)
+        // Initialize OkHttpClient
+        client = new OkHttpClient();
+
+        // Set up edge-to-edge display with insets for system bars
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
 
-        // Initialize and set up RecyclerView
+        // Initialize RecyclerView
         recyclerView = findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         // Initialize list of items (recipes) to be displayed in RecyclerView
         itemList = new ArrayList<>();
+        initializeRecipeItems();
 
-        String shawarmaIngredients = "1 kg boneless chicken thighs\n3 tbsp plain yogurt\n4 cloves garlic, minced\n2 tbsp olive oil\n1 tsp ground cumin\n1 tsp paprika\n1 tsp coriander\n1 tsp turmeric\n1/2 tsp cinnamon\n1/2 tsp black pepper\n1/2 tsp cardamom\n1/2 tsp chili powder\n1 tsp salt\njuice of 1 lemon";
-        String shawarmaInstructions = "1. Marinate the chicken with yogurt, garlic, oil, spices, and lemon juice. Rest for 1 hour.\n\n2. Grill or cook in a pan until fully cooked. Slice thinly.\n\n3. Serve in pita with cucumbers, tomatoes, pickles, onions, and garlic sauce.";
-        itemList.add(new Item(R.drawable.food_image, "Shawarma", "Delicious food", shawarmaIngredients, shawarmaInstructions));
-
-        String braisedBeefIngredients = "1.5 kg beef chuck\n2 tbsp olive oil\n1 large onion, chopped\n4 cloves garlic, minced\n2 carrots, chopped\n2 celery stalks, chopped\n2 cups beef broth\n1 cup red wine\n2 tbsp tomato paste\n2 bay leaves\n1 tsp thyme\nsalt and pepper to taste";
-        String braisedBeefInstructions = "1. Season beef with salt and pepper. Brown it in a large pot with olive oil.\n\n2. Remove beef and sauté onions, garlic, carrots, and celery.\n\n3. Add tomato paste, red wine, and beef broth.\n\n4. Return beef to the pot, add bay leaves and thyme, and simmer for 2-3 hours until tender.";
-        itemList.add(new Item(R.drawable.food_image2, "Braised Beef", "Tasty meal", braisedBeefIngredients, braisedBeefInstructions));
-
-        String lemonTartIngredients = "1 1/4 cups all-purpose flour\n1/2 cup butter\n1/4 cup sugar\n4 large eggs\n1 cup sugar\n1 tbsp lemon zest\n1/2 cup fresh lemon juice\n1/2 cup heavy cream\nPowdered sugar for garnish";
-        String lemonTartInstructions = "1. Prepare the crust by mixing flour, butter, and sugar. Press into a tart pan and bake at 350°F (175°C) for 20 minutes.\n\n" +
-                "2. Whisk eggs, sugar, lemon zest, juice, and cream. Pour into the baked crust.\n\n" +
-                "3. Bake for 20-25 minutes until the filling is set. Let cool and dust with powdered sugar before serving.";
-        itemList.add(new Item(R.drawable.food_image3, "Lemon Tart", "Healthy dish", lemonTartIngredients, lemonTartInstructions));
-
-
-        // Initialize the RecyclerView adapter and set it to the RecyclerView
+        // Initialize RecyclerView adapter and set it
         adapter = new RecyclerViewAdapter(itemList, this);
         recyclerView.setAdapter(adapter);
 
-        // Set up camera button to open camera when clicked
+        // Set up the camera button to open the camera when clicked
         ImageButton cameraButton = findViewById(R.id.camera_button);
         cameraButton.setOnClickListener(v -> {
-            // Check for camera permission
             if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CAMERA)
                     == PackageManager.PERMISSION_GRANTED) {
-                // If permission is granted, open the camera
                 openCamera();
             } else {
-                // If permission is not granted, request permission
                 ActivityCompat.requestPermissions(MainActivity.this,
-                        new String[]{Manifest.permission.CAMERA}, CAMERA_REQUEST_CODE);
+                        new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE}, CAMERA_REQUEST_CODE);
             }
         });
 
-        // Find and set up the cancel button to hide the keyboard when clicked
-        Button cancelButton = findViewById(R.id.cancel_button);
-        cancelButton.setOnClickListener(v -> hideKeyboard()); // Call hideKeyboard() when clicked
-
-        // Initialize BottomNavigationView
+        // Set up the BottomNavigationView
         bottomNavigationView = findViewById(R.id.bottom_navigation);
-
-        // Set up the BottomNavigationView listener to handle item selections
-        bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
+        bottomNavigationView.setOnItemSelectedListener(new BottomNavigationView.OnItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                switch (item.getItemId()) {
-                    case R.id.navigation_search:
-                        // Focus on the search bar when the "Search" item is clicked
-                        EditText searchEditText = findViewById(R.id.search_edit_text);
-                        searchEditText.requestFocus();  // Moves focus to the search bar
-                        InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
-                        if (imm != null) {
-                            imm.showSoftInput(searchEditText, InputMethodManager.SHOW_IMPLICIT);  // Shows the keyboard
-                        }
-                        return true;
+                int id = item.getItemId();
 
-                    case R.id.navigation_add:
-                        // Open the camera for adding a new recipe
-                        if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CAMERA)
-                                == PackageManager.PERMISSION_GRANTED) {
-                            openCamera();
-                        } else {
-                            ActivityCompat.requestPermissions(MainActivity.this,
-                                    new String[]{Manifest.permission.CAMERA}, CAMERA_REQUEST_CODE);
-                        }
-                        return true;
+                // Check if the selected item is "Search"
+                if (id == R.id.nav_search) {
+                    // Focus on the search bar when the "Search" item is clicked
+                    EditText searchEditText = findViewById(R.id.search_edit_text);
+                    searchEditText.requestFocus();  // Moves focus to the search bar
+                    InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+                    if (imm != null) {
+                        imm.showSoftInput(searchEditText, InputMethodManager.SHOW_IMPLICIT);  // Shows the keyboard
+                    }
+                    return true;
 
-                    case R.id.navigation_inventory:
-                        // Show pop-up menu for the inventory item
-                        showPopupMenu(findViewById(R.id.navigation_inventory));
-                        return true;
+                    // Check if the selected item is "Add"
+                } else if (id == R.id.navigation_add) {
+                    // Open the camera for adding a new recipe
+                    if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CAMERA)
+                            == PackageManager.PERMISSION_GRANTED) {
+                        openCamera();
+                    } else {
+                        ActivityCompat.requestPermissions(MainActivity.this,
+                                new String[]{Manifest.permission.CAMERA}, CAMERA_REQUEST_CODE);
+                    }
+                    return true;
 
-                    default:
-                        return false;
+                    // Check if the selected item is "Inventory"
+                } else if (id == R.id.navigation_inventory) {
+                    // Show pop-up menu for the inventory item
+                    showPopupMenu(findViewById(R.id.navigation_inventory));
+                    return true;
+
+                    // Default case: return false
+                } else {
+                    return false;
                 }
             }
         });
-
     }
 
+    // Initialize the recipe items
+    private void initializeRecipeItems() {
+        // Shawarma Recipe
+        String shawarmaIngredients = "1 kg boneless chicken thighs\n3 tbsp plain yogurt\n4 cloves garlic, minced\n...";
+        String shawarmaInstructions = "1. Marinate the chicken with yogurt, garlic, oil, spices, and lemon juice...";
+        itemList.add(new Item(R.drawable.food_image, "Shawarma", "Delicious food", shawarmaIngredients, shawarmaInstructions));
+
+        // Braised Beef Recipe
+        String braisedBeefIngredients = "1.5 kg beef chuck\n2 tbsp olive oil\n1 large onion, chopped\n...";
+        String braisedBeefInstructions = "1. Season beef with salt and pepper. Brown it in a large pot with olive oil...";
+        itemList.add(new Item(R.drawable.food_image2, "Braised Beef", "Tasty meal", braisedBeefIngredients, braisedBeefInstructions));
+
+        // Lemon Tart Recipe
+        String lemonTartIngredients = "1 1/4 cups all-purpose flour\n1/2 cup butter\n1/4 cup sugar\n...";
+        String lemonTartInstructions = "1. Prepare the crust by mixing flour, butter, and sugar. Press into a tart pan...";
+        itemList.add(new Item(R.drawable.food_image3, "Lemon Tart", "Healthy dish", lemonTartIngredients, lemonTartInstructions));
+    }
 
     // Method to open the camera
     private void openCamera() {
         Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         if (cameraIntent.resolveActivity(getPackageManager()) != null) {
-            startActivityForResult(cameraIntent, CAMERA_CAPTURE_CODE);
-        } else {
-            Toast.makeText(this, "No camera app found", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    // Handle the result from the camera intent
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == CAMERA_CAPTURE_CODE && resultCode == RESULT_OK) {
-            // Photo captured successfully, handle the data here (you can save or display it)
-            Toast.makeText(this, "Photo captured successfully!", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    // Handle camera permission request results
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == CAMERA_REQUEST_CODE) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                openCamera();
-            } else {
-                Toast.makeText(this, "Camera permission denied", Toast.LENGTH_SHORT).show();
+            File photoFile = null;
+            try {
+                photoFile = createImageFile();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+            if (photoFile != null) {
+                Uri photoURI = FileProvider.getUriForFile(this,
+                        "com.example.kitchenvision.fileprovider",  // Replace with your file provider authority
+                        photoFile);
+                cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
+                startActivityForResult(cameraIntent, CAMERA_CAPTURE_CODE);
             }
         }
     }
 
-    // Method to show the pop-up menu for sub-items
+    // Create a file to store the image
+    private File createImageFile() throws IOException {
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String imageFileName = "JPEG_" + timeStamp + "_";
+        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        File image = File.createTempFile(
+                imageFileName,  /* prefix */
+                ".jpg",         /* suffix */
+                storageDir      /* directory */
+        );
+        currentPhotoPath = image.getAbsolutePath();
+        return image;
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == CAMERA_CAPTURE_CODE && resultCode == RESULT_OK) {
+            File file = new File(currentPhotoPath);
+            uploadFile(file);
+        }
+    }
+
+    // Method to upload the captured image file
+    private void uploadFile(File file) {
+        if (file.exists()) {
+            RequestBody fileBody = RequestBody.create(file, MediaType.parse("image/jpeg"));
+            RequestBody requestBody = new MultipartBody.Builder()
+                    .setType(MultipartBody.FORM)
+                    .addFormDataPart("file", file.getName(), fileBody)
+                    .build();
+
+            Request request = new Request.Builder()
+                    .url(UPLOAD_URL)
+                    .post(requestBody)
+                    .build();
+
+            client.newCall(request).enqueue(new Callback() {
+                @Override
+                public void onFailure(Call call, IOException e) {
+                    runOnUiThread(() -> Toast.makeText(MainActivity.this, "Upload failed", Toast.LENGTH_SHORT).show());
+                    e.printStackTrace();
+                }
+
+                @Override
+                public void onResponse(Call call, Response response) throws IOException {
+                    if (response.isSuccessful()) {
+                        runOnUiThread(() -> Toast.makeText(MainActivity.this, "File uploaded successfully", Toast.LENGTH_SHORT).show());
+                    } else {
+                        runOnUiThread(() -> Toast.makeText(MainActivity.this, "Upload failed: " + response.message(), Toast.LENGTH_SHORT).show());
+                    }
+                }
+            });
+        }
+    }
+
+    // Focus on search bar
+    private void focusOnSearchBar() {
+        EditText searchEditText = findViewById(R.id.search_edit_text);
+        searchEditText.requestFocus();
+        InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+        if (imm != null) {
+            imm.showSoftInput(searchEditText, InputMethodManager.SHOW_IMPLICIT);
+        }
+    }
+
+    // Other methods (showPopupMenu, hideKeyboard, etc.) remain unchanged...
+    // Method to show the pop-up menu for inventory or other items
     private void showPopupMenu(View anchorView) {
         // Create a new PopupMenu instance
         PopupMenu popupMenu = new PopupMenu(this, anchorView);
@@ -191,10 +265,12 @@ public class MainActivity extends AppCompatActivity {
             int itemId = menuItem.getItemId();
 
             if (itemId == R.id.navigationChild_recipe) {
-                // Handle Child Item 1 (Recipe) click
+                // Handle child item 1 (Recipe) click
+                Toast.makeText(this, "Recipe selected", Toast.LENGTH_SHORT).show();
                 return true;
             } else if (itemId == R.id.navigationChild_food) {
-                // Handle Child Item 2 (Food) click
+                // Handle child item 2 (Food) click
+                Toast.makeText(this, "Food selected", Toast.LENGTH_SHORT).show();
                 return true;
             }
             return false;
@@ -204,15 +280,4 @@ public class MainActivity extends AppCompatActivity {
         popupMenu.show();
     }
 
-    // Method to hide the keyboard
-    private void hideKeyboard() {
-        // Get the input method manager
-        InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
-
-        // Check if there is a focused view and hide the keyboard
-        View view = getCurrentFocus();
-        if (view != null) {
-            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
-        }
-    }
 }
