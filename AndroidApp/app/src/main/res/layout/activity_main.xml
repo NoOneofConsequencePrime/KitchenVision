@@ -3,64 +3,87 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main"
+
     android:layout_width="match_parent"
+    android:id="@+id/main"
     android:layout_height="match_parent"
     tools:context=".MainActivity">
+<!--    androi-->
 
-    <!-- TextView (Main Content) -->
-    <TextView
-        android:id="@+id/textView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Hello World!"
-        app:layout_constraintBottom_toTopOf="@+id/bottomAppBar"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- Bottom App Bar -->
-    <com.google.android.material.bottomappbar.BottomAppBar
-        android:id="@+id/bottomAppBar"
+    <!-- Top Bar -->
+
+    <!-- RecyclerView for Main Content (Picture, Title, Subtitle) -->
+    <RelativeLayout
+        android:id="@+id/topBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:backgroundTint="@color/white"
-        app:fabCradleMargin="10dp"
-        app:fabCradleRoundedCornerRadius="20dp"
-        app:fabCradleVerticalOffset="10dp"
+        android:background="@color/colorPrimary"
+        android:padding="10dp"
+        tools:layout_editor_absoluteX="0dp"
+        tools:layout_editor_absoluteY="0dp">
+
+        <!-- Menu Icon -->
+        <ImageView
+            android:id="@+id/menu_icon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:src="@drawable/ic_menu" />
+
+        <!-- Search Bar -->
+
+        <!-- Camera Button -->
+
+        <EditText
+            android:id="@+id/searchBar"
+            android:layout_width="310dp"
+            android:layout_height="54dp"
+            android:layout_marginStart="50dp"
+            android:layout_toEndOf="@id/menu_icon"
+            android:background="@drawable/search"
+            android:hint="Search recipes"
+            android:padding="10dp" />
+
+        <ImageView
+            android:id="@+id/camera_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_marginEnd="53dp"
+            android:src="@drawable/ic_camera" />
+    </RelativeLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toBottomOf="@id/topBar"
+        app:layout_constraintBottom_toTopOf="@id/bottom_navigation"
+        android:padding="10dp" />
+
+    <!-- Bottom Navigation Bar -->
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottom_navigation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:menu="@menu/activity_bottom_navigation"
+        app:labelVisibilityMode="labeled"
+        app:itemIconTint="@color/white"
+        app:itemTextColor="@color/white"
+        android:background="?attr/colorPrimary"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
+        android:elevation="8dp"/>
 
-        <!-- Menu items -->
-        <menu>
-            <item
-                android:id="@+id/navigation_inventory"
-                android:title="Inventory"
-                android:icon="@drawable/baseline_library_books_24"
-                app:showAsAction="ifRoom" />
-
-            <item
-                android:id="@+id/navigation_search"
-                android:title="Search"
-                android:icon="@drawable/baseline_search_24"
-                app:showAsAction="ifRoom" />
-        </menu>
-    </com.google.android.material.bottomappbar.BottomAppBar>
-
-    <!-- Floating Action Button (Plus Button in the center) -->
+    <!-- Floating Action Button (Plus Button) -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        android:src="@drawable/baseline_add_box_24"
+        android:src="@drawable/ic_add"
         android:tint="@color/white"
-        app:backgroundTint="@color/gray1"
-        app:layout_anchor="@id/bottomAppBar"
-        app:layout_anchorGravity="center"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:backgroundTint="@color/colorAccent"
+        app:layout_anchor="@id/bottom_navigation"
+        app:layout_anchorGravity="center" />
 </androidx.constraintlayout.widget.ConstraintLayout>
