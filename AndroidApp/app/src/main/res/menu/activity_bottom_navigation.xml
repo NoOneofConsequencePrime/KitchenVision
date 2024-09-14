@@ -13,5 +13,3 @@
         android:title="Inventory"
         android:icon="@drawable/ic_library" />
 </menu>
-
-

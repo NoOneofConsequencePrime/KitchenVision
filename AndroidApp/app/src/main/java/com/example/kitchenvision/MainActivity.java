@@ -27,10 +27,12 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.example.kitchenvision.Item;
+import com.example.kitchenvision.R;
+import android.widget.EditText;
+
 
 import java.util.ArrayList;
 import java.util.List;
-
 
 public class MainActivity extends AppCompatActivity {
 
@@ -104,23 +106,44 @@ public class MainActivity extends AppCompatActivity {
         bottomNavigationView = findViewById(R.id.bottom_navigation);
 
         // Set up the BottomNavigationView listener to handle item selections
-        bottomNavigationView.setOnNavigationItemSelectedListener(item -> {
-            int itemId = item.getItemId();
+        bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                switch (item.getItemId()) {
+                    case R.id.navigation_search:
+                        // Focus on the search bar when the "Search" item is clicked
+                        EditText searchEditText = findViewById(R.id.search_edit_text);
+                        searchEditText.requestFocus();  // Moves focus to the search bar
+                        InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+                        if (imm != null) {
+                            imm.showSoftInput(searchEditText, InputMethodManager.SHOW_IMPLICIT);  // Shows the keyboard
+                        }
+                        return true;
 
-            if (itemId == R.id.navigation_inventory) {
-                // Show pop-up menu for the inventory item
-                showPopupMenu(findViewById(R.id.navigation_inventory));
-                return true;
-            } else if (itemId == R.id.navigation_search) {
-                // Handle Search item click (add action if needed)
-                return true;
-            } else if (itemId == R.id.navigation_add) {
-                // Handle Add item click (add action if needed)
-                return true;
+                    case R.id.navigation_add:
+                        // Open the camera for adding a new recipe
+                        if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CAMERA)
+                                == PackageManager.PERMISSION_GRANTED) {
+                            openCamera();
+                        } else {
+                            ActivityCompat.requestPermissions(MainActivity.this,
+                                    new String[]{Manifest.permission.CAMERA}, CAMERA_REQUEST_CODE);
+                        }
+                        return true;
+
+                    case R.id.navigation_inventory:
+                        // Show pop-up menu for the inventory item
+                        showPopupMenu(findViewById(R.id.navigation_inventory));
+                        return true;
+
+                    default:
+                        return false;
+                }
             }
-            return false;
         });
+
     }
+
 
     // Method to open the camera
     private void openCamera() {
