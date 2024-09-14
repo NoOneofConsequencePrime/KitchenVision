@@ -36,9 +36,9 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
         Item item = itemList.get(position);
 
         // Bind the data to the view elements
-        holder.titleTextView.setText(item.getTitle());
-        holder.subtitleTextView.setText(item.getSubtitle());
-        holder.imageView.setImageResource(item.getImageResId());
+        holder.titleTextView.setText(item.getName());
+        holder.subtitleTextView.setText(item.getDescription());
+        holder.imageView.setImageResource(item.getImage());
 
         // Set OnClickListener for each RecyclerView item to show a popup dialog
         holder.itemView.setOnClickListener(new View.OnClickListener() {
@@ -46,9 +46,11 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
             public void onClick(View v) {
                 // Create a new instance of the RecipeDetailDialog and pass the recipe data
                 RecipeDetailDialog dialog = RecipeDetailDialog.newInstance(
-                        item.getTitle(),
-                        item.getSubtitle(),
-                        item.getImageResId()
+                        item.getName(),
+                        item.getDescription(),
+                        item.getImage(),
+                        item.getIngredient(),
+                        item.getInstructions()
                 );
 
                 // Show the dialog (requires the context to be an instance of AppCompatActivity)

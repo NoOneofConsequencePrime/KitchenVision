@@ -6,6 +6,7 @@
     android:layout_height="match_parent"
     tools:context=".RecipeDetailActivity">
 
+    <!-- Recipe Image -->
     <ImageView
         android:id="@+id/recipeImage"
         android:layout_width="match_parent"
@@ -13,16 +14,20 @@
         android:scaleType="centerCrop"
         android:src="@drawable/default_image" />
 
+    <!-- Recipe Title -->
     <TextView
         android:id="@+id/recipeTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Recipe Title"
         android:textSize="24sp"
+        android:textStyle="bold"
         app:layout_constraintTop_toBottomOf="@id/recipeImage"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        android:padding="16dp" />
 
+    <!-- Recipe Subtitle (Description) -->
     <TextView
         android:id="@+id/recipeSubtitle"
         android:layout_width="wrap_content"
@@ -31,6 +36,57 @@
         android:textSize="16sp"
         app:layout_constraintTop_toBottomOf="@id/recipeTitle"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        android:padding="8dp" />
+
+    <!-- Recipe Ingredients -->
+    <TextView
+        android:id="@+id/recipeIngredients"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Ingredients"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:layout_constraintTop_toBottomOf="@id/recipeSubtitle"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:padding="16dp" />
+
+    <!-- Ingredient List -->
+    <TextView
+        android:id="@+id/ingredientList"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="List of ingredients here..."
+        android:textSize="14sp"
+        app:layout_constraintTop_toBottomOf="@id/recipeIngredients"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:padding="8dp" />
+
+    <!-- Recipe Instructions -->
+    <TextView
+        android:id="@+id/recipeInstructions"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Instructions"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:layout_constraintTop_toBottomOf="@id/ingredientList"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:padding="16dp" />
+
+    <!-- Instruction Steps -->
+    <TextView
+        android:id="@+id/instructionSteps"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Instructions go here..."
+        android:textSize="14sp"
+        app:layout_constraintTop_toBottomOf="@id/recipeInstructions"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:padding="8dp" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
