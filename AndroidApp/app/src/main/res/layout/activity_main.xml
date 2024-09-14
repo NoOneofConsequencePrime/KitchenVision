@@ -83,6 +83,7 @@
         app:layout_constraintBottom_toTopOf="@id/bottom_navigation"
         android:padding="10dp" />
 
+    <!-- BottomNavigationView -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_navigation"
         android:layout_width="match_parent"
@@ -95,5 +96,6 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:menu="@menu/activity_bottom_navigation"
         tools:layout_editor_absoluteX="0dp" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

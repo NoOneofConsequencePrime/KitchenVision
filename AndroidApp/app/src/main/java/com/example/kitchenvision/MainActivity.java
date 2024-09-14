@@ -1,9 +1,11 @@
 package com.example.kitchenvision;
 
 import android.os.Bundle;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
+import android.widget.PopupMenu;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -13,6 +15,8 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,6 +24,7 @@ public class MainActivity extends AppCompatActivity {
 
     private RecyclerView recyclerView;
     private List<Item> itemList;
+    private BottomNavigationView bottomNavigationView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,6 +63,60 @@ public class MainActivity extends AppCompatActivity {
                 hideKeyboard();
             }
         });
+
+        // Initialize BottomNavigationView
+        bottomNavigationView = findViewById(R.id.bottom_navigation);  // Correct initialization
+
+        // Set up the BottomNavigationView listener for item selections
+        bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(MenuItem item) {
+                int itemId = item.getItemId();
+
+                if (itemId == R.id.navigation_inventory) {
+                    // Always create and show the pop-up menu when Parent Item is clicked
+                    showPopupMenu(findViewById(R.id.navigation_inventory));
+                    return true;
+                } else if (itemId == R.id.navigation_search) {
+                    // Handle Search item click
+                    return true;
+                } else if (itemId == R.id.navigation_add) {
+                    // Handle Add item click
+                    return true;
+                }
+                return false;
+            }
+        });
+    }
+
+    // Method to show the pop-up menu for sub-items
+    private void showPopupMenu(View anchorView) {
+        // Always create a new PopupMenu instance
+        PopupMenu popupMenu = new PopupMenu(this, anchorView);
+
+        // Inflate the menu resource into the pop-up menu
+        popupMenu.getMenuInflater().inflate(R.menu.activity_submenu, popupMenu.getMenu());
+
+        // Handle submenu item clicks
+        popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem menuItem) {
+                int itemId = menuItem.getItemId();
+
+                if (itemId == R.id.navigationChild_recipe) {
+                    // Handle Child Item 1 (Recipe) click
+                    return true;
+                } else if (itemId == R.id.navigationChild_food) {
+                    // Handle Child Item 2 (Food) click
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+        });
+
+        // Show the pop-up menu
+        popupMenu.show();
     }
 
     // Method to hide the keyboard
