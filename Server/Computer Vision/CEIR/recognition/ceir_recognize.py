@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 '''
 Stage 3: recognition for predicting
-Last time for updating: 04/15/2020
+Last time for updating: 14/09/2024
 '''
 
 
@@ -9,8 +9,8 @@ import torch
 import os, sys, time
 from torch.autograd import Variable
 sys.path.append(os.path.join(os.getcwd(), 'recognition/'))
-import utils
-import dataset
+import ut
+import dt
 from PIL import Image
 import models.crnn as crnn
 
@@ -32,8 +32,8 @@ def sort_lines(txt_file):
 
 
 def predict_this_box(image, model, alphabet):
-    converter = utils.strLabelConverter(alphabet)
-    transformer = dataset.resizeNormalize((200, 32))
+    converter = ut.strLabelConverter(alphabet)
+    transformer = dt.resizeNormalize((200, 32))
     image = transformer(image)
     if torch.cuda.is_available():
         image = image.cuda()
@@ -53,6 +53,7 @@ def predict_this_box(image, model, alphabet):
 
 
 def load_images_to_predict(image_path, label_path):
+    sys.path.append(os.path.join(os.getcwd(), 'recognition/'))
     start = time.time()
     print('load_images_to_predict')
     # load model
@@ -95,4 +96,5 @@ def load_images_to_predict(image_path, label_path):
 
 
 if __name__ == "__main__":
-    load_images_to_predict('result/step1/image/r8.jpg', 'result/step2/label/r8.txt')
+    sys.path.append(os.path.join(os.getcwd(), 'recognition/'))
+    load_images_to_predict('../result/step1/image/recipe2.jpg', 'result/step2/label/recipe2.txt')
