@@ -31,3 +31,6 @@ google-services.json
 
 # Android Profiling
 *.hprof
+
+receipt-ocr/
+best_loss0.000151.pth
