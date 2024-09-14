@@ -37,13 +37,13 @@
             <item
                 android:id="@+id/navigation_inventory"
                 android:title="Inventory"
-                android:icon="@drawable/ic_inventory"
+                android:icon="@drawable/baseline_library_books_24"
                 app:showAsAction="ifRoom" />
 
             <item
                 android:id="@+id/navigation_search"
                 android:title="Search"
-                android:icon="@drawable/ic_search"
+                android:icon="@drawable/baseline_search_24"
                 app:showAsAction="ifRoom" />
         </menu>
     </com.google.android.material.bottomappbar.BottomAppBar>
@@ -54,7 +54,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
-        android:src="@drawable/ic_add"
+        android:src="@drawable/baseline_add_box_24"
         android:tint="@color/white"
         app:backgroundTint="@color/gray1"
         app:layout_anchor="@id/bottomAppBar"
