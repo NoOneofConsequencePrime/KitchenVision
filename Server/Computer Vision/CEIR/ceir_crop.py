@@ -1,13 +1,14 @@
 # -*- coding: UTF-8 -*-
 '''
 Stage 1: preprocessing for predicting
-Last time for updating: 04/15/2020
+Last time for updating: 14/09/2024
 '''
 
 
 import os
 import cv2
 import numpy as np
+import argparse
 
 
 class Crop():
@@ -87,5 +88,6 @@ class Crop():
 
 
 if __name__ == '__main__':
+
     crop = Crop('images/r8.jpg')
     crop.main()
