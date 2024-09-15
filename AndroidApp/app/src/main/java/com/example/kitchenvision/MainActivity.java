@@ -39,6 +39,8 @@ import android.view.inputmethod.InputMethodManager;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -75,7 +77,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Log.d("KitchenVision", "hi");
+        Log.d("KitchenVision", "test");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -145,9 +147,8 @@ public class MainActivity extends AppCompatActivity {
         searchField.setOnEditorActionListener((v, actionId, event) -> {
             Log.d("KitchenVision", "hi");
 
-            if (actionId == EditorInfo.IME_ACTION_SEARCH ||
-                    (event != null && event.getKeyCode() == KeyEvent.KEYCODE_ENTER && event.getAction() == KeyEvent.ACTION_DOWN)) {
-
+            if (actionId == EditorInfo.IME_ACTION_SEARCH || (event != null && event.getKeyCode() == KeyEvent.KEYCODE_ENTER && event.getAction() == KeyEvent.ACTION_DOWN)) {
+                Log.d("KitchenVision", "hi");
                 // Get the query from the search field
                 String query = searchField.getText().toString().trim();
 
@@ -155,33 +156,46 @@ public class MainActivity extends AppCompatActivity {
                 searchInCsv(query);
                 return true;  // Indicating the action was handled
             }
-
             return false;
         });
     }
 
-    private void searchInCsv(String query) {
-        String searchTerm = query;  // Value to search
-        int searchColumn = 2;                // Column index to search
+    private List<Recipe> searchInCsv(String query) {
+        List<Recipe> recipes = new ArrayList<>();  // List to store found recipes
+        int searchColumn = 0;  // Search in the first column (index 0)
 
         try {
-            // Load the CSV file from the assets folder (you can also load from internal storage)
-            InputStream is = getAssets().open("your-file.csv");  // Place your CSV file in the assets folder
+            // Load the CSV file from the assets folder
+            InputStream is = getAssets().open("your-file.csv");  // Replace with your CSV file name
             BufferedReader reader = new BufferedReader(new InputStreamReader(is));
 
             String line;
             while ((line = reader.readLine()) != null) {
-                // Split the line into values
+                // Split the line into values (assuming comma as the delimiter)
                 String[] values = line.split(",");
-                if (values.length > searchColumn && values[searchColumn].equalsIgnoreCase(searchTerm)) {
-                    Log.d("CSVSearch", "Found match: " + String.join(", ", values));
+
+                // Ensure that the line has the expected number of columns (at least name and ingredients)
+                if (values.length > 1 && values[searchColumn].equalsIgnoreCase(query)) {
+                    String name = values[0];  // First column is the name
+                    String ingredients = values[1];  // Second column is ingredients
+
+                    // Create a new Recipe object with the name, ingredients, and null for instructions and picture
+                    Recipe recipe = new Recipe(name, ingredients, null, null);
+
+                    // Add the Recipe object to the list
+                    recipes.add(recipe);
+
+                    Log.d("CSVSearch", "Found match: " + name + ", Ingredients: " + ingredients);
                 }
             }
+
             reader.close();
         } catch (IOException e) {
             e.printStackTrace();
             Log.e("CSVSearch", "Error reading CSV file");
         }
+
+        return recipes;  // Return the list of found recipes
     }
 
     private void hideKeyboard() {
