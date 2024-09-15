@@ -31,12 +31,13 @@
 
         <!-- Search Bar -->
         <EditText
-            android:id="@+id/search_edit_text_search"
+            android:id="@+id/search_recipe_page"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:background="@color/light_gray"
             android:hint="Search Recipes or Add Ingredients"
+            android:imeOptions="actionSearch"
             android:inputType="text"
             android:textColor="@color/black"
             android:textSize="16sp"

@@ -98,7 +98,8 @@ public class MainActivity extends AppCompatActivity {
         bottomNavigationView.setOnItemSelectedListener(item -> {
             if (item.getItemId() == R.id.nav_search) {
                 // Handle home button click
-                setContentView(R.layout.activity_search);
+                Intent intent = new Intent(MainActivity.this, SearchActivity.class);
+                startActivity(intent);
                 return true;
             } else if (item.getItemId() == R.id.nav_add) {
                 // Handle the add button (to launch camera)
