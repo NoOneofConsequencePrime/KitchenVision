@@ -49,6 +49,16 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.lang.ref.WeakReference;
 
+
+import android.util.Log;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
+
+
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.OkHttpClient;
@@ -151,9 +161,8 @@ public class MainActivity extends AppCompatActivity {
                 Log.d("KitchenVision", "hi");
                 // Get the query from the search field
                 String query = searchField.getText().toString().trim();
+                List<Recipe> matchedRecipes = searchInCsv(query); // Trigger the CSV search function
 
-                // Trigger the CSV search function
-                searchInCsv(query);
                 return true;  // Indicating the action was handled
             }
             return false;
@@ -197,6 +206,7 @@ public class MainActivity extends AppCompatActivity {
 
         return recipes;  // Return the list of found recipes
     }
+
 
     private void hideKeyboard() {
         View view = this.getCurrentFocus();
@@ -410,7 +420,6 @@ public class MainActivity extends AppCompatActivity {
     // Example of initializing the recipe items
     private void initializeRecipeItems() {
         recipeList.clear();
-
         // Example recipe items
         String shawarmaIngredients = "1 kg boneless chicken thighs\n3 tbsp plain yogurt\n...";
         String shawarmaInstructions = "1. Marinate the chicken with yogurt, garlic, oil, and spices...\n2. Cook until golden.";
