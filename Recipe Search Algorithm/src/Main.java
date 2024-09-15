@@ -5,28 +5,23 @@ public class Main {
 	final static int MM = 22000;
 //	public static ArrayList<String> IngredientList;
 	public static ArrayList<String> RecipeList = new ArrayList<String>();
-	public static HashMap<String, Integer> IngredientID = new HashMap<String, Integer>();
-	public static HashMap<String, Integer> RecipeID = new HashMap<String, Integer>();
-	public static HashMap<Integer, ArrayList<Integer>> RecipeIngredientList = new HashMap<Integer, ArrayList<Integer>>();
-	public static HashMap<Integer, Integer> RecipeAcquiredIngredientCount = new HashMap<Integer, Integer>();
-	public static int[] IngredientCount = new int[MM];
+	public static HashMap<String, ArrayList<String>> RecipeIngredientList = new HashMap<String, ArrayList<String>>();
+	public static HashMap<String, ArrayList<String>> IngredientForRecipeList = new HashMap<String, ArrayList<String>>();
+	public static HashMap<String, Integer> RecipeAcquiredIngredientCount = new HashMap<String, Integer>();
+	public static HashMap<String, Integer> IngredientCount = new HashMap<String, Integer>();
 	
 	public static void main(String[] args) throws IOException {
 		ParseIngredientCSV();
 		ParseRecipeCSV();
 		
-		AddIngredient("baby spinach leaves");
-		AddIngredient("cherry tomatoes");
 		SortRecipe();
 		
 		for (int i = 0; i < 10; i++) {
-			println(RecipeList.get(i)+": "+RecipeAcquiredIngredientCount.get(RecipeID.get(RecipeList.get(i))));
+			println(RecipeList.get(i) + ": " + RecipeAcquiredIngredientCount.get(RecipeList.get(i)));
 		}
-//		println(RecipeList.size());
 	}
 	
 	public static void ParseIngredientCSV() {
-		ArrayList<String> list = new ArrayList<String>();
 		String file = "ingredient.csv";
 		String line = "";
         String delimiter = ",";
@@ -35,7 +30,8 @@ public class Main {
             while ((line = br.readLine()) != null) {
                 String[] values = line.split(delimiter);
                 for (String str : values) {
-                	IngredientID.put(str, IngredientID.size());
+                	IngredientCount.put(str, 0);
+                	IngredientForRecipeList.put(str, new ArrayList<String>());
                 }
             }
             br.close();
@@ -43,13 +39,9 @@ public class Main {
             println(e);
         }
 	}
+	
 	public static void ParseRecipeCSV() throws IOException {
-		for (int i = 0; i <= MM; i++) {
-			RecipeIngredientList.put(i, new ArrayList<Integer>());
-			RecipeAcquiredIngredientCount.put(i, 0);
-		}
-		ArrayList<String> list = new ArrayList<String>();
-		String file = "test.csv";
+		String file = "output.csv";
 		String line = "";
         String delimiter = ",";
         
@@ -59,8 +51,9 @@ public class Main {
                 for (int i = 0; i < values.length; i++) {
                 	String str = values[i];
                 	if (i == 0) {
-                		RecipeID.put(str, RecipeID.size());
                 		RecipeList.add(str);
+                		RecipeAcquiredIngredientCount.put(str, 0);
+                		RecipeIngredientList.put(str, new ArrayList<String>());
                 		continue;
                 	}
                 	if (i == 1) {
@@ -70,8 +63,8 @@ public class Main {
                 		str = str.substring(0, str.length()-1);
                 	}
                 	
-                	RecipeIngredientList.get(IngredientID.get(str)).add(RecipeID.get(values[0]));
-                	println(RecipeIngredientList.get(IngredientID.get(str)).size());
+                	IngredientForRecipeList.get(str).add(values[0]);
+                	RecipeIngredientList.get(values[0]).add(str);
                 }
             }
             br.close();
@@ -81,32 +74,25 @@ public class Main {
 	}
 	
 	public static boolean AddIngredient(String str) {
-		Integer ingredientID = IngredientID.get(str);
-		if (ingredientID == null) {return false;}
-		
-		if (IngredientCount[ingredientID] == 0) {
-			ArrayList<Integer> list = RecipeIngredientList.get(ingredientID);
-			for (Integer recipeID : list) {
-				RecipeAcquiredIngredientCount.put(recipeID, RecipeAcquiredIngredientCount.get(recipeID)+1);
+		if (IngredientCount.get(str) == 0) {
+			ArrayList<String> list = IngredientForRecipeList.get(str);
+			for (String recipe : list) {
+				RecipeAcquiredIngredientCount.put(recipe, RecipeAcquiredIngredientCount.get(recipe)+1);
 			}
 		}
-		IngredientCount[ingredientID]++;
+		IngredientCount.put(str, IngredientCount.get(str)+1);
 		
 		return true;
 	}
 	
 	public static boolean RemoveIngredient(String str) {
-		Integer ingredientID = IngredientID.get(str);
-		if (ingredientID == null) {return false;}
-		
-		if (IngredientCount[ingredientID] < 1) {return false;}
-		if (IngredientCount[ingredientID] == 1) {
-			ArrayList<Integer> list = RecipeIngredientList.get(ingredientID);
-			for (Integer recipeID : list) {
-				RecipeAcquiredIngredientCount.put(recipeID, RecipeAcquiredIngredientCount.get(recipeID)-1);
+		if (IngredientCount.get(str) == 1) {
+			ArrayList<String> list = IngredientForRecipeList.get(str);
+			for (String recipe : list) {
+				RecipeAcquiredIngredientCount.put(recipe, RecipeAcquiredIngredientCount.get(recipe)-1);
 			}
 		}
-		IngredientCount[ingredientID]--;
+		IngredientCount.put(str, IngredientCount.get(str)-1);
 		
 		return true;
 	}
@@ -114,14 +100,10 @@ public class Main {
 	private static class RecipeComparator implements Comparator<String> {
 		@Override
 		public int compare(String str1, String str2) {
-			int recipeID1 = RecipeID.get(str1), recipeID2 = RecipeID.get(str2);
-			println(recipeID1 + ":::" + recipeID2);
-			int completion1 = 100*RecipeAcquiredIngredientCount.get(recipeID1) / RecipeIngredientList.get(recipeID1).size();
-			int completion2 = 100*RecipeAcquiredIngredientCount.get(recipeID2) / RecipeIngredientList.get(recipeID2).size();
+			double completion1 = (double)RecipeAcquiredIngredientCount.get(str1) / RecipeIngredientList.get(str1).size();
+			double completion2 = (double)RecipeAcquiredIngredientCount.get(str2) / RecipeIngredientList.get(str2).size();
 			
-			if (completion1 != 0) {println(str1+": "+RecipeAcquiredIngredientCount.get(recipeID1));}
-			if (completion2 != 0) {println(str2+": "+RecipeAcquiredIngredientCount.get(recipeID2));}
-			return Double.compare(completion1, completion2);
+			return Double.compare(completion2, completion1);
 		}
 	}
 	
