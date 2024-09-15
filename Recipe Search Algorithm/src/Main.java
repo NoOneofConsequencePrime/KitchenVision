@@ -11,13 +11,18 @@ public class Main {
 	public static HashMap<Integer, Integer> RecipeAcquiredIngredientCount = new HashMap<Integer, Integer>();
 	public static int[] IngredientCount = new int[MM];
 	
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
 		ParseIngredientCSV();
 		ParseRecipeCSV();
+		
+		AddIngredient("baby spinach leaves");
+		AddIngredient("cherry tomatoes");
 		SortRecipe();
 		
-		
-		println("done");
+		for (int i = 0; i < 10; i++) {
+			println(RecipeList.get(i)+": "+RecipeAcquiredIngredientCount.get(RecipeID.get(RecipeList.get(i))));
+		}
+//		println(RecipeList.size());
 	}
 	
 	public static void ParseIngredientCSV() {
@@ -33,17 +38,18 @@ public class Main {
                 	IngredientID.put(str, IngredientID.size());
                 }
             }
+            br.close();
         } catch (Exception e) {
             println(e);
         }
 	}
-	public static void ParseRecipeCSV() {
+	public static void ParseRecipeCSV() throws IOException {
 		for (int i = 0; i <= MM; i++) {
 			RecipeIngredientList.put(i, new ArrayList<Integer>());
 			RecipeAcquiredIngredientCount.put(i, 0);
 		}
 		ArrayList<String> list = new ArrayList<String>();
-		String file = "recipe.csv";
+		String file = "test.csv";
 		String line = "";
         String delimiter = ",";
         
@@ -56,16 +62,19 @@ public class Main {
                 		RecipeID.put(str, RecipeID.size());
                 		RecipeList.add(str);
                 		continue;
-                	} else if (i == 1) {
+                	}
+                	if (i == 1) {
                 		str = str.substring(1, str.length());
-                	} else if (i == values.length-1) {
+                	}
+                	if (i == values.length-1) {
                 		str = str.substring(0, str.length()-1);
                 	}
                 	
                 	RecipeIngredientList.get(IngredientID.get(str)).add(RecipeID.get(values[0]));
+                	println(RecipeIngredientList.get(IngredientID.get(str)).size());
                 }
-                break;
             }
+            br.close();
         } catch (Exception e) {
             println(e);
         }
@@ -105,8 +114,13 @@ public class Main {
 	private static class RecipeComparator implements Comparator<String> {
 		@Override
 		public int compare(String str1, String str2) {
-			double completion1 = (double)RecipeAcquiredIngredientCount.get(str1) / RecipeIngredientList.get(str1).size();
-			double completion2 = (double)RecipeAcquiredIngredientCount.get(str2) / RecipeIngredientList.get(str2).size();
+			int recipeID1 = RecipeID.get(str1), recipeID2 = RecipeID.get(str2);
+			println(recipeID1 + ":::" + recipeID2);
+			int completion1 = 100*RecipeAcquiredIngredientCount.get(recipeID1) / RecipeIngredientList.get(recipeID1).size();
+			int completion2 = 100*RecipeAcquiredIngredientCount.get(recipeID2) / RecipeIngredientList.get(recipeID2).size();
+			
+			if (completion1 != 0) {println(str1+": "+RecipeAcquiredIngredientCount.get(recipeID1));}
+			if (completion2 != 0) {println(str2+": "+RecipeAcquiredIngredientCount.get(recipeID2));}
 			return Double.compare(completion1, completion2);
 		}
 	}
