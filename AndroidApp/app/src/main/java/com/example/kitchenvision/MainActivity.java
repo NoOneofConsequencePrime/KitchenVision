@@ -10,7 +10,6 @@ import android.provider.MediaStore;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.PopupMenu;
 import android.widget.Toast;
@@ -28,7 +27,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-
 import com.example.kitchenvision.Item;
 import com.example.kitchenvision.R;
 
@@ -69,7 +67,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main); // Set the layout for the activity
 
-        // Initialize OkHttpClient
+        // Initialize OkHttpClient (if necessary)
         client = new OkHttpClient();
 
         // Set up edge-to-edge display with insets for system bars
@@ -79,13 +77,13 @@ public class MainActivity extends AppCompatActivity {
             return insets;
         });
 
-        // Initialize RecyclerView
+        // Initialize RecyclerView (example setup)
         recyclerView = findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         // Initialize list of items (recipes) to be displayed in RecyclerView
         itemList = new ArrayList<>();
-        initializeRecipeItems();
+        initializeRecipeItems(); // This should now work
 
         // Initialize RecyclerView adapter and set it
         adapter = new RecyclerViewAdapter(itemList, this);
@@ -103,66 +101,37 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // Set up the BottomNavigationView
+        // Initialize BottomNavigationView
         bottomNavigationView = findViewById(R.id.bottom_navigation);
-        bottomNavigationView.setOnItemSelectedListener(new BottomNavigationView.OnItemSelectedListener() {
+
+        // Set the listener for BottomNavigationView item selection
+        bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                 int id = item.getItemId();
-
-                // Check if the selected item is "Search"
                 if (id == R.id.nav_search) {
                     // Focus on the search bar when the "Search" item is clicked
                     EditText searchEditText = findViewById(R.id.search_edit_text);
-                    searchEditText.requestFocus();  // Moves focus to the search bar
+                    searchEditText.requestFocus();
                     InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
                     if (imm != null) {
-                        imm.showSoftInput(searchEditText, InputMethodManager.SHOW_IMPLICIT);  // Shows the keyboard
+                        imm.showSoftInput(searchEditText, InputMethodManager.SHOW_IMPLICIT);
                     }
                     return true;
-
-                    // Check if the selected item is "Add"
                 } else if (id == R.id.navigation_add) {
-                    // Open the camera for adding a new recipe
-                    if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CAMERA)
-                            == PackageManager.PERMISSION_GRANTED) {
-                        openCamera();
-                    } else {
-                        ActivityCompat.requestPermissions(MainActivity.this,
-                                new String[]{Manifest.permission.CAMERA}, CAMERA_REQUEST_CODE);
-                    }
+                    // Launch the SearchActivity when the "Add" button is clicked
+                    Intent searchIntent = new Intent(MainActivity.this, SearchActivity.class);
+                    startActivity(searchIntent);  // This will start the SearchActivity
                     return true;
-
-                    // Check if the selected item is "Inventory"
                 } else if (id == R.id.navigation_inventory) {
                     // Show pop-up menu for the inventory item
                     showPopupMenu(findViewById(R.id.navigation_inventory));
                     return true;
-
-                    // Default case: return false
                 } else {
                     return false;
                 }
             }
         });
-    }
-
-    // Initialize the recipe items
-    private void initializeRecipeItems() {
-        // Shawarma Recipe
-        String shawarmaIngredients = "1 kg boneless chicken thighs\n3 tbsp plain yogurt\n4 cloves garlic, minced\n...";
-        String shawarmaInstructions = "1. Marinate the chicken with yogurt, garlic, oil, spices, and lemon juice...";
-        itemList.add(new Item(R.drawable.food_image, "Shawarma", "Delicious food", shawarmaIngredients, shawarmaInstructions));
-
-        // Braised Beef Recipe
-        String braisedBeefIngredients = "1.5 kg beef chuck\n2 tbsp olive oil\n1 large onion, chopped\n...";
-        String braisedBeefInstructions = "1. Season beef with salt and pepper. Brown it in a large pot with olive oil...";
-        itemList.add(new Item(R.drawable.food_image2, "Braised Beef", "Tasty meal", braisedBeefIngredients, braisedBeefInstructions));
-
-        // Lemon Tart Recipe
-        String lemonTartIngredients = "1 1/4 cups all-purpose flour\n1/2 cup butter\n1/4 cup sugar\n...";
-        String lemonTartInstructions = "1. Prepare the crust by mixing flour, butter, and sugar. Press into a tart pan...";
-        itemList.add(new Item(R.drawable.food_image3, "Lemon Tart", "Healthy dish", lemonTartIngredients, lemonTartInstructions));
     }
 
     // Method to open the camera
@@ -171,13 +140,14 @@ public class MainActivity extends AppCompatActivity {
         if (cameraIntent.resolveActivity(getPackageManager()) != null) {
             File photoFile = null;
             try {
-                photoFile = createImageFile();
+                photoFile = createImageFile();  // Create the file to store the image
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
+
             if (photoFile != null) {
                 Uri photoURI = FileProvider.getUriForFile(this,
-                        "com.example.kitchenvision.fileprovider",  // Replace with your file provider authority
+                        "com.example.kitchenvision.fileprovider",  // Ensure this matches your manifest
                         photoFile);
                 cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
                 startActivityForResult(cameraIntent, CAMERA_CAPTURE_CODE);
@@ -185,7 +155,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    // Create a file to store the image
+    // Method to create a file to store the image
     private File createImageFile() throws IOException {
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         String imageFileName = "JPEG_" + timeStamp + "_";
@@ -199,13 +169,32 @@ public class MainActivity extends AppCompatActivity {
         return image;
     }
 
+    // Handle the result from the camera intent
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == CAMERA_CAPTURE_CODE && resultCode == RESULT_OK) {
             File file = new File(currentPhotoPath);
-            uploadFile(file);
+            uploadFile(file);  // Implement the upload logic
         }
+    }
+
+// Other methods (initializeRecipeItems, showPopupMenu, etc.) will go here
+
+
+    // Method to initialize recipe items
+    private void initializeRecipeItems() {
+        String shawarmaIngredients = "1 kg boneless chicken thighs\n3 tbsp plain yogurt\n4 cloves garlic, minced\n...";
+        String shawarmaInstructions = "1. Marinate the chicken with yogurt, garlic, oil, spices, and lemon juice...";
+        itemList.add(new Item(R.drawable.food_image, "Shawarma", "Delicious food", shawarmaIngredients, shawarmaInstructions));
+
+        String braisedBeefIngredients = "1.5 kg beef chuck\n2 tbsp olive oil\n1 large onion, chopped\n...";
+        String braisedBeefInstructions = "1. Season beef with salt and pepper. Brown it in a large pot with olive oil...";
+        itemList.add(new Item(R.drawable.food_image2, "Braised Beef", "Tasty meal", braisedBeefIngredients, braisedBeefInstructions));
+
+        String lemonTartIngredients = "1 1/4 cups all-purpose flour\n1/2 cup butter\n1/4 cup sugar\n...";
+        String lemonTartInstructions = "1. Prepare the crust by mixing flour, butter, and sugar. Press into a tart pan...";
+        itemList.add(new Item(R.drawable.food_image3, "Lemon Tart", "Healthy dish", lemonTartIngredients, lemonTartInstructions));
     }
 
     // Method to upload the captured image file
@@ -241,17 +230,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    // Focus on search bar
-    private void focusOnSearchBar() {
-        EditText searchEditText = findViewById(R.id.search_edit_text);
-        searchEditText.requestFocus();
-        InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
-        if (imm != null) {
-            imm.showSoftInput(searchEditText, InputMethodManager.SHOW_IMPLICIT);
-        }
-    }
-
-    // Other methods (showPopupMenu, hideKeyboard, etc.) remain unchanged...
     // Method to show the pop-up menu for inventory or other items
     private void showPopupMenu(View anchorView) {
         // Create a new PopupMenu instance
@@ -280,4 +258,15 @@ public class MainActivity extends AppCompatActivity {
         popupMenu.show();
     }
 
+    // Method to hide the keyboard
+    private void hideKeyboard() {
+        // Get the input method manager
+        InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+
+        // Check if there is a focused view and hide the keyboard
+        View view = getCurrentFocus();
+        if (view != null) {
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
+    }
 }
