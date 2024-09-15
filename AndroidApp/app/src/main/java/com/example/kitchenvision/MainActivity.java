@@ -47,7 +47,6 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.FileProvider;
 
-
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.ArrayList;
@@ -199,7 +198,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Create the request
         Request request = new Request.Builder()
-                .url("http://your-server-url/upload") // Replace with your actual server URL
+                .url("http://10.0.0.142/upload.php") // Replace with your actual server URL
                 .post(requestBody)
                 .build();
 
@@ -219,7 +218,7 @@ public class MainActivity extends AppCompatActivity {
                     String responseData = response.body().string();
                     runOnUiThread(() -> {
                         // Show success message on UI thread
-                        Toast.makeText(MainActivity.this, "Image uploaded successfully", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MainActivity.this, "Image uploaded successfully"+responseData, Toast.LENGTH_SHORT).show();
                     });
                 } else {
                     runOnUiThread(() -> {
