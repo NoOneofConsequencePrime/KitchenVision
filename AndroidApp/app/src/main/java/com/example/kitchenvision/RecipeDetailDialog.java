@@ -31,7 +31,7 @@ public class RecipeDetailDialog extends BottomSheetDialogFragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.activity_recipe_detail, container, false);
+        View view = inflater.inflate(R.layout.detail_recipe, container, false);
 
         // Retrieve the data passed to the dialog
         String title = getArguments().getString("RECIPE_TITLE");

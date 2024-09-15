@@ -78,11 +78,13 @@ public class MainActivity extends AppCompatActivity {
     private String currentPhotoPath;
     private ImageView imageView;
     private RecyclerView recyclerView;
-    private RecyclerViewAdapter adapter;
-    private List<Item> itemList;
+    private RecyclerViewAdapterRecipe adapterRecipe;
+    private RecyclerViewAdapterFood adapterFood;
     private BottomNavigationView bottomNavigationView;
     private OkHttpClient client;
 
+    private List<Recipe> recipeList;
+    private List<Food> foodList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,17 +93,17 @@ public class MainActivity extends AppCompatActivity {
 
         // Initialize RecyclerView and item list
         recyclerView = findViewById(R.id.recyclerView);
-        itemList = new ArrayList<>();
+        recipeList = new ArrayList<>();
+        foodList = new ArrayList<>();
         initializeRecipeItems();  // Load example recipes
-        setupRecyclerView();
+        setupRecyclerRecipeView();
 
         // Initialize the BottomNavigationView and set listener for the pop-up menu
         bottomNavigationView = findViewById(R.id.bottom_navigation);
+        bottomNavigationView.setSelectedItemId(R.id.nav_inventory); // Focuses the 'Add' item
         bottomNavigationView.setOnItemSelectedListener(item -> {
             if (item.getItemId() == R.id.nav_search) {
-                // Handle home button click
-                Intent intent = new Intent(MainActivity.this, SearchActivity.class);
-                startActivity(intent);
+                recipeList.clear();
                 return true;
             } else if (item.getItemId() == R.id.nav_add) {
                 // Handle the add button (to launch camera)
@@ -218,7 +220,7 @@ public class MainActivity extends AppCompatActivity {
                     String responseData = response.body().string();
                     runOnUiThread(() -> {
                         // Show success message on UI thread
-                        Toast.makeText(MainActivity.this, "Image uploaded successfully"+responseData, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MainActivity.this, "Image uploaded successfully", Toast.LENGTH_SHORT).show();
                     });
                 } else {
                     runOnUiThread(() -> {
@@ -229,7 +231,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
-
 
     // Handle permission results
     @Override
@@ -244,17 +245,18 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    // Initialize the RecyclerView
-    private void setupRecyclerView() {
+    // Set up the RecyclerView for recipe items
+    private void setupRecyclerRecipeView() {
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new RecyclerViewAdapter(itemList, this);
-        recyclerView.setAdapter(adapter);
+        adapterRecipe = new RecyclerViewAdapterRecipe(recipeList, this);
+        recyclerView.setAdapter(adapterRecipe);
     }
 
-
-    private void openAddRecipeActivity() {
-        Intent intent = new Intent(MainActivity.this, AddRecipeActivity.class);
-        startActivity(intent);
+    // Set up the RecyclerView for food items
+    private void setupRecyclerFoodView() {
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        adapterFood = new RecyclerViewAdapterFood(foodList, this);
+        recyclerView.setAdapter(adapterFood);
     }
 
     // Method to show the pop-up menu for the bottom navigation bar
@@ -271,14 +273,28 @@ public class MainActivity extends AppCompatActivity {
         popupMenu.setOnMenuItemClickListener(menuItem -> {
             if (menuItem.getItemId() == R.id.nav_child_recipe) {
                 makeGetRequest();
+
+                runOnUiThread(() -> {
+                    initializeRecipeItems();
+                    setupRecyclerRecipeView();
+                    Log.d("KitchenVision", "recipe submenu"+recipeList);
+                    adapterRecipe.notifyDataSetChanged();
+                });
                 return true;
             } else if (menuItem.getItemId() == R.id.nav_child_food) {
-                Toast.makeText(this, "Food Submenu clicked", Toast.LENGTH_SHORT).show();
+                runOnUiThread(() -> {
+                    initializeFoodItems();
+                    setupRecyclerFoodView();
+                    Log.d("KitchenVision", "hello"+recipeList);
+                    Toast.makeText(this, "Food Submenu clicked", Toast.LENGTH_SHORT).show();
+                    adapterFood.notifyDataSetChanged();
+                });
                 return true;
             } else {
                 return false;
             }
         });
+
         popupMenu.show();
     }
 
@@ -322,20 +338,29 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-
     // Example of initializing the recipe items
     private void initializeRecipeItems() {
+        recipeList.clear();
+
         // Example recipe items
         String shawarmaIngredients = "1 kg boneless chicken thighs\n3 tbsp plain yogurt\n...";
         String shawarmaInstructions = "1. Marinate the chicken with yogurt, garlic, oil, and spices...\n2. Cook until golden.";
-        itemList.add(new Item(R.drawable.food_image, "Shawarma", "Delicious chicken shawarma", shawarmaIngredients, shawarmaInstructions));
+        recipeList.add(new Recipe(R.drawable.food_image, "Shawarma", "Delicious chicken shawarma", shawarmaIngredients, shawarmaInstructions));
 
         String braisedBeefIngredients = "1.5 kg beef chuck\n2 tbsp olive oil\n...";
         String braisedBeefInstructions = "1. Brown the beef...\n2. Simmer with veggies until tender.";
-        itemList.add(new Item(R.drawable.food_image2, "Braised Beef", "Hearty braised beef", braisedBeefIngredients, braisedBeefInstructions));
+        recipeList.add(new Recipe(R.drawable.food_image2, "Braised Beef", "Hearty braised beef", braisedBeefIngredients, braisedBeefInstructions));
 
         String lemonTartIngredients = "1 cup flour\n1/2 cup butter\n...";
         String lemonTartInstructions = "1. Prepare the tart shell...\n2. Fill with lemon curd and bake.";
-        itemList.add(new Item(R.drawable.food_image3, "Lemon Tart", "Tart and sweet lemon dessert", lemonTartIngredients, lemonTartInstructions));
+        recipeList.add(new Recipe(R.drawable.food_image3, "Lemon Tart", "Tart and sweet lemon dessert", lemonTartIngredients, lemonTartInstructions));
+    }
+
+    private void initializeFoodItems() {
+        foodList.clear();
+        // Example recipe items
+        foodList.add(new Food("Lettuce", 2.0));
+        foodList.add(new Food("Green bean", 10.0));
+        foodList.add(new Food("Tomato", 2.0));
     }
 }
