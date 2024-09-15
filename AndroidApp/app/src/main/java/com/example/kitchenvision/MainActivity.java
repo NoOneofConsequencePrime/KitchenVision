@@ -2,6 +2,7 @@ package com.example.kitchenvision;
 
 import android.Manifest;
 import android.content.Intent;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -14,6 +15,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.Toast;
+import android.widget.EditText;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -46,6 +48,7 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.FileProvider;
+import android.view.inputmethod.InputMethodManager;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
@@ -82,6 +85,8 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerViewAdapterFood adapterFood;
     private BottomNavigationView bottomNavigationView;
     private OkHttpClient client;
+    private EditText searchField;
+
 
     private List<Recipe> recipeList;
     private List<Food> foodList;
@@ -95,6 +100,7 @@ public class MainActivity extends AppCompatActivity {
         recyclerView = findViewById(R.id.recyclerView);
         recipeList = new ArrayList<>();
         foodList = new ArrayList<>();
+        searchField = findViewById(R.id.searchField);
         initializeRecipeItems();  // Load example recipes
         setupRecyclerRecipeView();
 
@@ -104,8 +110,20 @@ public class MainActivity extends AppCompatActivity {
         bottomNavigationView.setOnItemSelectedListener(item -> {
             if (item.getItemId() == R.id.nav_search) {
                 recipeList.clear();
+                foodList.clear();
+
+                // Request focus on the search field
+                searchField.requestFocus();
+
+                // Show the keyboard
+                InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+                if (imm != null) {
+                    imm.showSoftInput(searchField, InputMethodManager.SHOW_IMPLICIT);
+                }
                 return true;
             } else if (item.getItemId() == R.id.nav_add) {
+                hideKeyboard();
+
                 // Handle the add button (to launch camera)
                 if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CAMERA)
                         == PackageManager.PERMISSION_GRANTED) {
@@ -117,6 +135,8 @@ public class MainActivity extends AppCompatActivity {
                 }
                 return true;
             } else if (item.getItemId() == R.id.nav_inventory) {
+                hideKeyboard();
+
                 // Show pop-up menu
                 showPopupMenu(bottomNavigationView);
                 return true;
@@ -137,6 +157,16 @@ public class MainActivity extends AppCompatActivity {
                         CAMERA_REQUEST_CODE);
             }
         });
+    }
+
+    private void hideKeyboard() {
+        View view = this.getCurrentFocus();
+        if (view != null) {
+            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            if (imm != null) {
+                imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+            }
+        }
     }
 
     // Method to open camera
@@ -200,7 +230,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Create the request
         Request request = new Request.Builder()
-                .url("http://10.0.0.142/upload.py") // Replace with your actual server URL
+                .url("http://10.0.0.142/venv/upload.py") // Replace with your actual server URL
                 .post(requestBody)
                 .build();
 

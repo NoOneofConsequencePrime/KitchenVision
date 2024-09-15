@@ -30,7 +30,7 @@
 
         <!-- Search Bar -->
         <EditText
-            android:id="@+id/search_edit_text"
+            android:id="@+id/searchField"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:textColor="@color/black"
