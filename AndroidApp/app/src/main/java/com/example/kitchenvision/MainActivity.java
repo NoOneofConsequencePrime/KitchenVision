@@ -68,6 +68,9 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import java.io.IOException;
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -98,7 +101,8 @@ public class MainActivity extends AppCompatActivity {
         bottomNavigationView.setOnItemSelectedListener(item -> {
             if (item.getItemId() == R.id.nav_search) {
                 // Handle home button click
-                setContentView(R.layout.activity_search);
+                Intent intent = new Intent(MainActivity.this, SearchActivity.class);
+                startActivity(intent);
                 return true;
             } else if (item.getItemId() == R.id.nav_add) {
                 // Handle the add button (to launch camera)
@@ -172,11 +176,61 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == CAMERA_CAPTURE_CODE && resultCode == RESULT_OK) {
-            File file = new File(currentPhotoPath);
-            Uri imageUri = Uri.fromFile(file);
-            imageView.setImageURI(imageUri);
+            // Handle the image capture result here
+            File imageFile = new File(currentPhotoPath); // Assuming you have a variable currentPhotoPath for the file path
+            if (imageFile.exists()) {
+                // Now that the picture is taken, make a network request
+                uploadImage(imageFile);
+            } else {
+                Toast.makeText(this, "Error: Image file not found", Toast.LENGTH_SHORT).show();
+            }
         }
     }
+
+    private void uploadImage(File imageFile) {
+        OkHttpClient client = new OkHttpClient();
+
+        // Create request body to send the image file
+        RequestBody fileBody = RequestBody.create(imageFile, MediaType.parse("image/jpeg"));
+        RequestBody requestBody = new MultipartBody.Builder()
+                .setType(MultipartBody.FORM)
+                .addFormDataPart("file", imageFile.getName(), fileBody)
+                .build();
+
+        // Create the request
+        Request request = new Request.Builder()
+                .url("http://your-server-url/upload") // Replace with your actual server URL
+                .post(requestBody)
+                .build();
+
+        // Make the network request
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                // Handle failure (on background thread)
+                e.printStackTrace();
+                runOnUiThread(() -> Toast.makeText(MainActivity.this, "Upload failed", Toast.LENGTH_SHORT).show());
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                // Handle response (on background thread)
+                if (response.isSuccessful()) {
+                    String responseData = response.body().string();
+                    runOnUiThread(() -> {
+                        // Show success message on UI thread
+                        Toast.makeText(MainActivity.this, "Image uploaded successfully", Toast.LENGTH_SHORT).show();
+                    });
+                } else {
+                    runOnUiThread(() -> {
+                        // Handle error response
+                        Toast.makeText(MainActivity.this, "Upload failed: " + response.message(), Toast.LENGTH_SHORT).show();
+                    });
+                }
+            }
+        });
+    }
+
 
     // Handle permission results
     @Override
@@ -245,6 +299,9 @@ public class MainActivity extends AppCompatActivity {
             public void onFailure(Call call, IOException e) {
                 Log.e("KitchenVision", "Request failed: " + e.getMessage());
                 e.printStackTrace();
+                runOnUiThread(() -> {
+                    Toast.makeText(MainActivity.this, "Network request failed", Toast.LENGTH_SHORT).show();
+                });
             }
 
             @Override
