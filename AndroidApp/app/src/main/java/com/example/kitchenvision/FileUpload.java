@@ -15,7 +15,7 @@ import java.io.IOException;
 public class FileUpload {
 
     // Define the URL and media type
-    private static final String URL = "http://10.0.0.142/upload";  // Update this to your server's endpoint
+    private static final String URL = "http://10.0.0.142/upload.php";  // Update this to your server's endpoint
     private static final MediaType MEDIA_TYPE_JPG = MediaType.parse("image/jpeg");  // Change this to match your file type
 
     public static void main(String[] args) {

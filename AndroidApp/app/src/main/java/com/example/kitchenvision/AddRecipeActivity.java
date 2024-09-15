@@ -30,7 +30,7 @@ public class AddRecipeActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_add_recipe);
+        setContentView(R.layout.activity_main);
 
         // Example camera button setup
         ImageView cameraButton = findViewById(R.id.camera_button);

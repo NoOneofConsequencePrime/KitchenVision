@@ -11,13 +11,13 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.RecyclerView;
 import java.util.List;
 
-public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.ViewHolder> {
+public class RecyclerViewAdapterRecipe extends RecyclerView.Adapter<RecyclerViewAdapterRecipe.ViewHolder> {
 
-    private List<Item> itemList;
+    private List<Recipe> itemList;
     private Context context;
 
     // Constructor to accept itemList and context
-    public RecyclerViewAdapter(List<Item> itemList, Context context) {
+    public RecyclerViewAdapterRecipe(List<Recipe> itemList, Context context) {
         this.itemList = itemList;
         this.context = context;
     }
@@ -26,14 +26,14 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         // Inflate the item layout for each RecyclerView item
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.recipe_layout_picture, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_recipe, parent, false);
         return new ViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         // Get the item data based on the position
-        Item item = itemList.get(position);
+        Recipe item = itemList.get(position);
 
         // Bind the data to the view elements
         holder.titleTextView.setText(item.getName());

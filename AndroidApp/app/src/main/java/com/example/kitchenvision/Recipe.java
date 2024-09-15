@@ -1,13 +1,13 @@
 package com.example.kitchenvision;
 
-public class Item {
+public class Recipe {
     private int image;
     private String name;
     private String description;
     private String ingredient;
     private String instructions;
 
-    public Item(int image, String name, String description, String ingredient, String instructions) {
+    public Recipe(int image, String name, String description, String ingredient, String instructions) {
         this.image = image;
         this.name = name;
         this.description = description;

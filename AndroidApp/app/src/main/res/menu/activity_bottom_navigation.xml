@@ -6,7 +6,7 @@
         android:title="Search" />
     <item
         android:id="@+id/nav_add"
-        android:icon="@drawable/ic_add"
+        android:icon="@drawable/ic_camera"
         android:title="Add" />
     <item
         android:id="@+id/nav_inventory"
