@@ -5,11 +5,11 @@
         android:icon="@drawable/ic_search"
         android:title="Search" />
     <item
-        android:id="@+id/navigation_add"
+        android:id="@+id/nav_add"
         android:icon="@drawable/ic_add"
         android:title="Add" />
     <item
-        android:id="@+id/navigation_inventory"
+        android:id="@+id/nav_inventory"
         android:icon="@drawable/ic_library"
         android:title="Inventory" />
 </menu>

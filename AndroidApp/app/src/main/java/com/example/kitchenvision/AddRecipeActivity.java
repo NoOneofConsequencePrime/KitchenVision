@@ -1,119 +1,99 @@
 package com.example.kitchenvision;
 
-import androidx.appcompat.app.AppCompatActivity;
-import android.widget.ImageView;
-import android.graphics.Bitmap;
+import android.Manifest;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
-import android.content.Intent;
-import androidx.annotation.Nullable;
-import android.content.Intent;
+import android.os.Environment;
 import android.provider.MediaStore;
+import android.widget.ImageView;
 import android.widget.Toast;
-import android.app.AlertDialog;
-import java.io.ByteArrayOutputStream;
-import okhttp3.MediaType;
-import okhttp3.MultipartBody;
-import okhttp3.RequestBody;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class AddRecipeActivity extends AppCompatActivity {
 
-    private static final int CAMERA_REQUEST_CODE = 101;
-    private ImageView capturedImageView;
-    private Bitmap capturedImage;
+    private static final int CAMERA_CAPTURE_CODE = 101; // Define the capture code
+    private String currentPhotoPath;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_recipe);
 
-        capturedImageView = findViewById(R.id.capturedImage);
-
-        // Open the camera when the activity starts
-        openCamera();
+        // Example camera button setup
+        ImageView cameraButton = findViewById(R.id.camera_button);
+        cameraButton.setOnClickListener(v -> {
+            if (ContextCompat.checkSelfPermission(AddRecipeActivity.this, Manifest.permission.CAMERA)
+                    == PackageManager.PERMISSION_GRANTED) {
+                openCamera();
+            } else {
+                ActivityCompat.requestPermissions(AddRecipeActivity.this,
+                        new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE}, 100);
+            }
+        });
     }
 
+    // Method to open the camera and capture a photo
     private void openCamera() {
         Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        startActivityForResult(cameraIntent, CAMERA_REQUEST_CODE);
+        if (cameraIntent.resolveActivity(getPackageManager()) != null) {
+            File photoFile = null;
+            try {
+                photoFile = createImageFile();  // Create the image file
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+
+            if (photoFile != null) {
+                Uri photoURI = FileProvider.getUriForFile(this,
+                        "com.example.kitchenvision.fileprovider",  // Ensure this matches your manifest
+                        photoFile);
+                cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
+                startActivityForResult(cameraIntent, CAMERA_CAPTURE_CODE);  // Use the defined constant
+            }
+        }
+    }
+
+    // Method to create an image file
+    private File createImageFile() throws IOException {
+        // Create an image file name with a timestamp
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String imageFileName = "JPEG_" + timeStamp + "_";
+
+        // Get the directory for storing images
+        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+
+        // Create the image file
+        File image = File.createTempFile(
+                imageFileName,  /* prefix */
+                ".jpg",         /* suffix */
+                storageDir      /* directory */
+        );
+
+        // Save a file path for later use
+        currentPhotoPath = image.getAbsolutePath();
+        return image;
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == CAMERA_REQUEST_CODE && resultCode == RESULT_OK) {
-            capturedImage = (Bitmap) data.getExtras().get("data");
-            capturedImageView.setImageBitmap(capturedImage);
-
-            // Show dialog to ask if the user wants to retake or proceed
-            showRetakeOrProceedDialog();
+        if (requestCode == CAMERA_CAPTURE_CODE && resultCode == RESULT_OK) {
+            File file = new File(currentPhotoPath);
+            // Handle the captured image
+            Toast.makeText(this, "Photo captured successfully!", Toast.LENGTH_SHORT).show();
         }
-    }
-
-    private void showRetakeOrProceedDialog() {
-        new AlertDialog.Builder(this)
-                .setTitle("Picture Taken")
-                .setMessage("Do you want to retake the picture?")
-                .setPositiveButton("Retake", (dialog, which) -> {
-                    // User chose to retake the picture
-                    openCamera();
-                })
-                .setNegativeButton("Proceed", (dialog, which) -> {
-                    // User chose to proceed, send picture to the server
-                    sendPictureToServer();
-                })
-                .show();
-    }
-
-    private void sendPictureToServer() {
-        // Convert the bitmap to a byte array
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        capturedImage.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
-        byte[] imageBytes = byteArrayOutputStream.toByteArray();
-
-        // TODO: Implement your server API request logic here
-        // For example, using Retrofit or OkHttp to upload the imageBytes to your server.
-        uploadImageToServer(imageBytes);
-    }
-
-    private void uploadImageToServer(byte[] imageBytes) {
-        // Example using Retrofit (ensure you have the necessary libraries for Retrofit)
-        // You can adjust this code according to your server's API.
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("https://your-server.com")
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-
-        // Define your API interface
-        YourApiService apiService = retrofit.create(YourApiService.class);
-
-        // Prepare the image as part of a request body
-        RequestBody requestFile = RequestBody.create(MediaType.parse("image/jpeg"), imageBytes);
-        MultipartBody.Part body = MultipartBody.Part.createFormData("image", "image.jpg", requestFile);
-
-        // Call the upload API
-        Call<ServerResponse> call = apiService.uploadImage(body);
-        call.enqueue(new Callback<ServerResponse>() {
-            @Override
-            public void onResponse(Call<ServerResponse> call, Response<ServerResponse> response) {
-                if (response.isSuccessful()) {
-                    Toast.makeText(AddRecipeActivity.this, "Image uploaded successfully", Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(AddRecipeActivity.this, "Image upload failed", Toast.LENGTH_SHORT).show();
-                }
-            }
-
-            @Override
-            public void onFailure(Call<ServerResponse> call, Throwable t) {
-                Toast.makeText(AddRecipeActivity.this, "Failed to upload image", Toast.LENGTH_SHORT).show();
-            }
-        });
     }
 }

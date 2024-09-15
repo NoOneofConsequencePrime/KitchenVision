@@ -2,12 +2,12 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- Sub-item 1 -->
     <item
-        android:id="@+id/navigationChild_recipe"
+        android:id="@+id/nav_child_recipe"
         android:title="Recipe" />
 
     <!-- Sub-item 2 -->
     <item
-        android:id="@+id/navigationChild_food"
+        android:id="@+id/nav_child_food"
         android:title="Food" />
 
 </menu>

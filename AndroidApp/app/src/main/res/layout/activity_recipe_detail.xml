@@ -55,14 +55,16 @@
     <!-- Ingredient List -->
     <TextView
         android:id="@+id/ingredientList"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="List of ingredients here..."
         android:textSize="14sp"
         app:layout_constraintTop_toBottomOf="@id/recipeIngredients"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:padding="8dp" />
+        android:padding="8dp"
+        android:scrollbars="vertical"
+        android:maxLines="99999999" />
 
     <!-- Recipe Instructions -->
     <TextView
@@ -80,13 +82,15 @@
     <!-- Instruction Steps -->
     <TextView
         android:id="@+id/instructionSteps"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="Instructions go here..."
         android:textSize="14sp"
         app:layout_constraintTop_toBottomOf="@id/recipeInstructions"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:padding="8dp" />
+        android:padding="8dp"
+        android:scrollbars="vertical"
+        android:maxLines="99999999" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
