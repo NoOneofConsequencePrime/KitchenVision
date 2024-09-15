@@ -1,5 +1,5 @@
 import cohere
-server_secret = "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"
+# server_secret = "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"
 # input_list = ["white bread", "whole wheat bread", "baguettes", "iced coffee", "espresso", "iced tea", "green tea", "red tea"]
 # from groq import Groq
 # import os
@@ -9,10 +9,10 @@ server_secret = "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"
 
 co = cohere.Client("vnEjPoyzuplyx7z0PuB3Aso29f9XKDbOXjU9CB5n")
 
-with open("r8.txt", 'r') as f:
+with open(r"C:\Users\john.qing\PycharmProjects\CEIRTest\result\step3\temp.txt", 'r') as f:
     strInp = f.read().strip()
 
-with open ("ingredients.txt", "r") as f:
+with open (r"C:\Users\john.qing\PycharmProjects\BertingBert\ingredients.txt", "r") as f:
     line = f.readline().strip("\n").split(",")
 
 # chunks = split_into_chunks(line, 200)
@@ -58,7 +58,7 @@ response2 = co.chat(
         # {"role": "USER", "message": ingredients}
     # ],
     # message="Classify these grocery items into these categories: '" + ingredients + "' and return it in a python dictionary format: " + ", ".join(vals),
-    message = "Given the following list of grocery items: '" + ingredients + "', here is another list of ingredients, I want you to match items in this list: '" + ", ".join(val) + "' to the first list as much as possible, if you really can't find a match then just ignore the item and move on. However, keep in mind that there may be some irrelevant description words in each item. Return the matched result with a comma and space between each item. Although the name in the first and second doesn\'t have to match exactly, items in the returned list must match names in the first list EXACTLY!!!!! Remember that some item names have more than 1 word!!"
+    message = "Given the following list of grocery items: '" + ingredients + "', here is another list of ingredients, I want you to match items one to one with those in this list: '" + ", ".join(val) + "', if you can't find a match then just ignore the item and move on, there should only ever be one matched entry for each item in the second list!!! However, keep in mind that there may be some irrelevant description words in each item. Return the matched result with a comma and space between each item. Although the name in the first and second doesn\'t have to match exactly, items in the returned list must match names in the first list EXACTLY!!!!! Remember that some item names have more than 1 word!!"
     # perform web search before answering the question. You can also use your own custom connector.
     # connectors=[{"id": "web-search"}],
 )
