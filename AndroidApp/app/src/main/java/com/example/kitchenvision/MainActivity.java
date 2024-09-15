@@ -60,7 +60,14 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.lang.ref.WeakReference;
+import android.util.*;
 
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -72,6 +79,8 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerViewAdapter adapter;
     private List<Item> itemList;
     private BottomNavigationView bottomNavigationView;
+    private OkHttpClient client;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,7 +98,7 @@ public class MainActivity extends AppCompatActivity {
         bottomNavigationView.setOnItemSelectedListener(item -> {
             if (item.getItemId() == R.id.nav_search) {
                 // Handle home button click
-                Toast.makeText(MainActivity.this, "search clicked", Toast.LENGTH_SHORT).show();
+                setContentView(R.layout.activity_search);
                 return true;
             } else if (item.getItemId() == R.id.nav_add) {
                 // Handle the add button (to launch camera)
@@ -123,19 +132,6 @@ public class MainActivity extends AppCompatActivity {
                         CAMERA_REQUEST_CODE);
             }
         });
-//        activityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
-//            // Handle the result from the camera intent
-//            @Override
-//            protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-//                super.onActivityResult(requestCode, resultCode, data);
-//                if (requestCode == CAMERA_CAPTURE_CODE && resultCode == RESULT_OK) {
-//                    // Display the image in the ImageView
-//                    File file = new File(currentPhotoPath);
-//                    Uri imageUri = Uri.fromFile(file);
-//                    imageView.setImageURI(imageUri);
-//                }
-//            }
-//        });
     }
 
     // Method to open camera
@@ -216,9 +212,12 @@ public class MainActivity extends AppCompatActivity {
         // Set the gravity to end (right side)
         popupMenu.setGravity(Gravity.END);
 
+        // Initialize OkHttpClient
+        client = new OkHttpClient();
+
         popupMenu.setOnMenuItemClickListener(menuItem -> {
             if (menuItem.getItemId() == R.id.nav_child_recipe) {
-                Toast.makeText(this, "Recipe Submenu clicked", Toast.LENGTH_SHORT).show();
+                makeGetRequest();
                 return true;
             } else if (menuItem.getItemId() == R.id.nav_child_food) {
                 Toast.makeText(this, "Food Submenu clicked", Toast.LENGTH_SHORT).show();
@@ -228,6 +227,43 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         popupMenu.show();
+    }
+
+    private void makeGetRequest() {
+        // Define the URL to request
+        String url = "http://10.0.0.142/getdata.php?data=1234";
+        Log.d("KitchenVision", "start");
+
+        // Build the request
+        Request request = new Request.Builder()
+                .url(url)
+                .build();
+
+        // Make asynchronous request
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                Log.e("KitchenVision", "Request failed: " + e.getMessage());
+                e.printStackTrace();
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if (!response.isSuccessful()) {
+                    Log.e("KitchenVision", "Request failed with code: " + response.code());
+                    return;
+                }
+
+                final String responseData = response.body().string();
+                Log.d("KitchenVision", "Response received: " + responseData);
+
+                // Always update the UI on the main thread
+                runOnUiThread(() -> {
+                    // Show the Toast message from the main thread
+                    Toast.makeText(MainActivity.this, "Response: " + responseData, Toast.LENGTH_SHORT).show();
+                });
+            }
+        });
     }
 
 
