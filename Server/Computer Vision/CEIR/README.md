@@ -13,7 +13,7 @@ The CEIR has three parts: preprocess, detection, recognition.
 This project is obtained from: https://github.com/eadst/CEIR/blob/master/README.md
 
 ## Modification
-Modification made by James Zhao. Include testing with personal image files and implementation of parser file.
+Modification made by James Zhao.
 
 ## Usage
 cd the CIER folder and use: python run.py --crop images/recipe3.jpg --detect result/step1/image/recipe3.jpg --predict_image result/step2/image/recipe3.jpg --predict_label result/step2/label/recipe3.txt
