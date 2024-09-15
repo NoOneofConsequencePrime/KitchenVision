@@ -200,7 +200,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Create the request
         Request request = new Request.Builder()
-                .url("http://10.0.0.142/upload.php") // Replace with your actual server URL
+                .url("http://10.0.0.142/upload.py") // Replace with your actual server URL
                 .post(requestBody)
                 .build();
 
