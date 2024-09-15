@@ -1,4 +1,6 @@
 package com.example.kitchenvision;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.opencsv.CSVReader;
 
 import android.Manifest;
 import android.content.Intent;
@@ -11,33 +13,20 @@ import android.provider.MediaStore;
 import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.KeyEvent;
+import android.view.inputmethod.EditorInfo;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.Toast;
 import android.widget.EditText;
+import android.util.*;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
-import com.google.android.material.bottomnavigation.BottomNavigationView;
-
-import java.io.File;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.activity.result.ActivityResult;
@@ -46,36 +35,28 @@ import androidx.activity.result.ActivityResultCaller;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.FileProvider;
 import android.view.inputmethod.InputMethodManager;
 
-import com.google.android.material.bottomnavigation.BottomNavigationView;
-
-import java.util.ArrayList;
-import java.util.List;
-import android.view.Gravity;  // Make sure to import this
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.lang.ref.WeakReference;
-import android.util.*;
 
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
-import java.io.IOException;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 
 public class MainActivity extends AppCompatActivity {
-
     private static final int CAMERA_REQUEST_CODE = 100;
     private static final int CAMERA_CAPTURE_CODE = 101;
     private String currentPhotoPath;
@@ -91,8 +72,10 @@ public class MainActivity extends AppCompatActivity {
     private List<Recipe> recipeList;
     private List<Food> foodList;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.d("KitchenVision", "hi");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -157,6 +140,48 @@ public class MainActivity extends AppCompatActivity {
                         CAMERA_REQUEST_CODE);
             }
         });
+
+        // Set up listener for the "Enter" key in the search field
+        searchField.setOnEditorActionListener((v, actionId, event) -> {
+            Log.d("KitchenVision", "hi");
+
+            if (actionId == EditorInfo.IME_ACTION_SEARCH ||
+                    (event != null && event.getKeyCode() == KeyEvent.KEYCODE_ENTER && event.getAction() == KeyEvent.ACTION_DOWN)) {
+
+                // Get the query from the search field
+                String query = searchField.getText().toString().trim();
+
+                // Trigger the CSV search function
+                searchInCsv(query);
+                return true;  // Indicating the action was handled
+            }
+
+            return false;
+        });
+    }
+
+    private void searchInCsv(String query) {
+        String searchTerm = query;  // Value to search
+        int searchColumn = 2;                // Column index to search
+
+        try {
+            // Load the CSV file from the assets folder (you can also load from internal storage)
+            InputStream is = getAssets().open("your-file.csv");  // Place your CSV file in the assets folder
+            BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+
+            String line;
+            while ((line = reader.readLine()) != null) {
+                // Split the line into values
+                String[] values = line.split(",");
+                if (values.length > searchColumn && values[searchColumn].equalsIgnoreCase(searchTerm)) {
+                    Log.d("CSVSearch", "Found match: " + String.join(", ", values));
+                }
+            }
+            reader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+            Log.e("CSVSearch", "Error reading CSV file");
+        }
     }
 
     private void hideKeyboard() {
@@ -230,7 +255,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Create the request
         Request request = new Request.Builder()
-                .url("http://10.0.0.142/venv/upload.py") // Replace with your actual server URL
+                .url("http://10.0.0.142/upload.php") // Replace with your actual server URL
                 .post(requestBody)
                 .build();
 
@@ -393,4 +418,5 @@ public class MainActivity extends AppCompatActivity {
         foodList.add(new Food("Green bean", 10.0));
         foodList.add(new Food("Tomato", 2.0));
     }
+
 }

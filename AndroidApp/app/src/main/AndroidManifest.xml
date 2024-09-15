@@ -24,9 +24,6 @@
             </intent-filter>
         </activity>
 
-<!--        &lt;!&ndash; SearchActivity &ndash;&gt;-->
-<!--        <activity android:name=".SearchActivity" />-->
-
         <!-- FileProvider -->
         <provider
             android:name="androidx.core.content.FileProvider"

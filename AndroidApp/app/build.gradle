@@ -35,9 +35,13 @@ dependencies {
     implementation libs.activity
     implementation libs.constraintlayout
     implementation 'com.google.android.material:material:1.4.0'  // or newer
+    implementation 'com.opencsv:opencsv:5.6'
+    implementation project (':library')
+
     testImplementation libs.junit
     androidTestImplementation libs.ext.junit
     androidTestImplementation libs.espresso.core
+
 
     // Retrofit
     implementation 'com.squareup.okhttp3:okhttp:4.9.0'
