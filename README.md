@@ -1,3 +1,9 @@
+## Demonstration
+https://devpost.com/software/kitchenvision
+
+![App Homepage](./Demo/app%20homepage.jpg)
+![Sample Receipt Decipher](./Demo/sample%20receipt%20capture.jpg)
+
 ## Inspiration
 In the hustle and bustle of modern life, managing groceries and meal planning often feels like a daunting task. We wanted to create a solution that would transform these everyday challenges into a streamlined, enjoyable experience. Inspired by the growing need for smart kitchen management, we envisioned KitchenVision as a way to merge advanced technology with practical use. Our aim was to make it easier for people to track their grocery inventory, discover new recipes, and manage their meals—all from the convenience of their smartphones.
 
